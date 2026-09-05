@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Testimonials Admin — Remon Atef</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --bg:#0E1A1F; --surface:#152428; --surface-2:#1B2E33; --line:#263A3F;
+    --text:#EDE6D6; --text-dim:#93A6A9; --amber:#E8A248; --teal:#5FBFB3;
+    --danger:#E8746A; --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;line-height:1.6;padding:32px 20px;}
+  .wrap{max-width:920px;margin:0 auto;}
+  h1{font-size:1.5rem;margin-bottom:6px;}
+  .sub{color:var(--text-dim);font-size:0.9rem;margin-bottom:28px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:16px;}
+  input{width:100%;padding:12px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:0.95rem;margin-bottom:12px;}
+  button{font-family:inherit;cursor:pointer;border:none;border-radius:10px;padding:10px 18px;font-weight:600;font-size:0.9rem;}
+  .btn-login{background:var(--amber);color:var(--bg);width:100%;}
+  .btn-approve{background:var(--teal);color:var(--bg);}
+  .btn-reject{background:var(--danger);color:var(--bg);}
+  .btn-logout{background:transparent;border:1px solid var(--line);color:var(--text-dim);}
+  #error{color:var(--danger);font-size:0.85rem;margin-top:6px;display:none;}
+  #adminPanel{display:none;}
+  .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+  .t-name{font-weight:700;}
+  .t-meta{color:var(--text-dim);font-size:0.82rem;margin-bottom:10px;}
+  .t-review{margin-bottom:16px;}
+  .t-actions{display:flex;gap:10px;}
+  .status-pill{display:inline-block;font-size:0.72rem;padding:2px 10px;border-radius:20px;background:var(--surface-2);color:var(--text-dim);margin-left:8px;}
+  .empty{color:var(--text-dim);text-align:center;padding:40px 0;}
+  .tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .tab{background:var(--surface-2);color:var(--text-dim);border:1px solid var(--line);}
+  .tab.active{background:var(--amber);color:var(--bg);border-color:var(--amber);}
+
+  .main-tabs{display:flex;gap:10px;margin-bottom:28px;border-bottom:1px solid var(--line);}
+  .main-tab{background:transparent;border:none;color:var(--text-dim);padding:10px 4px;font-size:0.95rem;font-weight:600;border-bottom:2px solid transparent;border-radius:0;}
+  .main-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+  .section-panel{display:none;}
+  .section-panel.active{display:block;}
+
+  textarea{width:100%;padding:12px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:0.95rem;margin-bottom:12px;font-family:inherit;resize:vertical;min-height:70px;}
+  label{display:block;font-size:0.82rem;color:var(--text-dim);margin-bottom:6px;}
+  .field{margin-bottom:14px;}
+  input[type="file"]{width:100%;padding:10px;background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;color:var(--text-dim);font-size:0.85rem;margin-bottom:6px;}
+  .img-preview{max-width:220px;border-radius:8px;border:1px solid var(--line);margin-top:8px;display:none;}
+  .btn-primary{background:var(--amber);color:var(--bg);}
+  .btn-secondary{background:transparent;border:1px solid var(--line);color:var(--text);}
+  .proj-shot{width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:14px;border:1px solid var(--line);}
+  .proj-actions{display:flex;gap:10px;margin-top:14px;}
+  .status-toggle{font-size:0.72rem;padding:2px 10px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--text-dim);}
+  .status-toggle.on{color:var(--teal);border-color:var(--teal);}
+  .form-title{font-size:1.05rem;margin-bottom:16px;}
+  #saveMsg{font-size:0.85rem;margin-top:6px;display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="loginPanel" class="card" style="max-width:380px;margin:60px auto;">
+    <h1>Admin Login</h1>
+    <p class="sub">Sign in with the admin account to manage testimonials.</p>
+    <input type="email" id="email" placeholder="Email" autocomplete="username">
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn-login" id="loginBtn">Sign In</button>
+    <div id="error"></div>
+  </div>
+
+  <div id="adminPanel">
+    <div class="top-bar">
+      <div>
+        <h1>Admin Panel</h1>
+        <p class="sub">Manage testimonials and portfolio projects.</p>
+      </div>
+      <button class="btn-logout" id="logoutBtn">Sign Out</button>
+    </div>
+
+    <div class="main-tabs">
+      <button class="main-tab active" data-panel="testimonialsPanel">Testimonials</button>
+      <button class="main-tab" data-panel="projectsPanel">Projects</button>
+    </div>
+
+    <!-- ============ TESTIMONIALS PANEL ============ -->
+    <div id="testimonialsPanel" class="section-panel active">
+      <div class="tabs">
+        <button class="tab active" data-status="pending">Pending</button>
+        <button class="tab" data-status="approved">Approved</button>
+        <button class="tab" data-status="rejected">Rejected</button>
+      </div>
+      <div id="list"></div>
+    </div>
+
+    <!-- ============ PROJECTS PANEL ============ -->
+    <div id="projectsPanel" class="section-panel">
+      <div class="card">
+        <div class="form-title" id="formTitle">Add New Project</div>
+        <input type="hidden" id="projectId">
+        <div class="field">
+          <label for="p_case_tag">Case tag (e.g. "case_04 · project-name")</label>
+          <input type="text" id="p_case_tag" placeholder="case_04 · project-name">
+        </div>
+        <div class="field">
+          <label for="p_title">Project title</label>
+          <input type="text" id="p_title" placeholder="e.g. RAG Knowledge Agent with Live Document Sync">
+        </div>
+        <div class="field">
+          <label for="p_problem">Problem</label>
+          <textarea id="p_problem" placeholder="What issue was the client facing?"></textarea>
+        </div>
+        <div class="field">
+          <label for="p_solution">Solution</label>
+          <textarea id="p_solution" placeholder="How did the system solve it?"></textarea>
+        </div>
+        <div class="field">
+          <label for="p_results">Results (one per line)</label>
+          <textarea id="p_results" placeholder="Saved 5 hours of manual work daily&#10;90% faster response time&#10;Zero errors after launch"></textarea>
+        </div>
+        <div class="field">
+          <label for="p_image">Workflow / project image</label>
+          <input type="file" id="p_image" accept="image/*">
+          <img id="p_imgPreview" class="img-preview">
+        </div>
+        <div class="proj-actions">
+          <button class="btn-primary" id="saveProjectBtn">Save Project</button>
+          <button class="btn-secondary" id="cancelEditBtn" style="display:none;">Cancel Edit</button>
+        </div>
+        <div id="saveMsg"></div>
+      </div>
+
+      <div id="projectsList"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL = 'https://mounwgekupsokktofmvt.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vdW53Z2VrdXBzb2trdG9mbXZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5MTY4MTAsImV4cCI6MjEwMTQ5MjgxMH0.vRWKRG5THCbOUHxzd9UnX682UvColw6HDI-a5m115fg';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const loginPanel = document.getElementById('loginPanel');
+  const adminPanel = document.getElementById('adminPanel');
+  const errorBox = document.getElementById('error');
+  let currentStatus = 'pending';
+
+  async function checkSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      loginPanel.style.display = 'none';
+      adminPanel.style.display = 'block';
+      loadList();
+    } else {
+      loginPanel.style.display = 'block';
+      adminPanel.style.display = 'none';
+    }
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    errorBox.style.display = 'none';
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      errorBox.textContent = error.message;
+      errorBox.style.display = 'block';
+      return;
+    }
+    checkSession();
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
+    checkSession();
+  });
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentStatus = tab.getAttribute('data-status');
+      loadList();
+    });
+  });
+
+  document.querySelectorAll('.main-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      const panelId = tab.getAttribute('data-panel');
+      document.getElementById(panelId).classList.add('active');
+      if (panelId === 'projectsPanel') loadProjects();
+    });
+  });
+
+  async function loadList() {
+    const list = document.getElementById('list');
+    list.innerHTML = '<p class="empty">Loading…</p>';
+    const { data, error } = await supabaseClient
+      .from('testimonials')
+      .select('*')
+      .eq('status', currentStatus)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      list.innerHTML = `<p class="empty">Error loading testimonials: ${error.message}</p>`;
+      return;
+    }
+    if (!data || data.length === 0) {
+      list.innerHTML = '<p class="empty">Nothing here.</p>';
+      return;
+    }
+
+    list.innerHTML = data.map(t => `
+      <div class="card" data-id="${t.id}">
+        <div class="t-name">${escapeHtml(t.name)}${t.company ? ' · ' + escapeHtml(t.company) : ''}<span class="status-pill">${t.status}</span></div>
+        <div class="t-meta">${'★'.repeat(t.rating)}${'☆'.repeat(5 - t.rating)} — ${new Date(t.created_at).toLocaleDateString()}</div>
+        <div class="t-review">${escapeHtml(t.review)}</div>
+        <div class="t-actions">
+          ${t.status !== 'approved' ? `<button class="btn-approve" data-action="approved" data-id="${t.id}">Approve</button>` : ''}
+          ${t.status !== 'rejected' ? `<button class="btn-reject" data-action="rejected" data-id="${t.id}">Reject</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('button[data-action]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        btn.disabled = true;
+        await supabaseClient.from('testimonials').update({ status: action }).eq('id', id);
+        loadList();
+      });
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ============ PROJECTS ============
+  let pendingImageFile = null;
+  let editingProjectId = null;
+  let existingImageUrl = null; // tracks the saved image URL when editing, independent of preview CSS
+
+  const p_image = document.getElementById('p_image');
+  const p_imgPreview = document.getElementById('p_imgPreview');
+  p_image.addEventListener('change', () => {
+    const file = p_image.files[0];
+    pendingImageFile = file || null;
+    if (file) {
+      p_imgPreview.src = URL.createObjectURL(file);
+      p_imgPreview.style.display = 'block';
+    } else if (existingImageUrl) {
+      p_imgPreview.src = existingImageUrl;
+      p_imgPreview.style.display = 'block';
+    } else {
+      p_imgPreview.style.display = 'none';
+    }
+  });
+
+  async function loadProjects() {
+    const listEl = document.getElementById('projectsList');
+    listEl.innerHTML = '<p class="empty">Loading…</p>';
+    const { data, error } = await supabaseClient
+      .from('projects')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      listEl.innerHTML = `<p class="empty">Error loading projects: ${error.message}</p>`;
+      return;
+    }
+    if (!data || data.length === 0) {
+      listEl.innerHTML = '<p class="empty">No projects yet. Add one above.</p>';
+      return;
+    }
+
+    listEl.innerHTML = data.map(p => `
+      <div class="card" data-id="${p.id}">
+        ${p.image_url ? `<img class="proj-shot" src="${escapeHtml(p.image_url)}" alt="">` : ''}
+        <div class="t-name">${escapeHtml(p.title)}<span class="status-pill">${escapeHtml(p.case_tag || '')}</span></div>
+        <div class="t-meta">
+          <button class="status-toggle ${p.published ? 'on' : ''}" data-action="toggle-publish" data-id="${p.id}" data-current="${p.published}">
+            ${p.published ? '● Published' : '○ Draft'}
+          </button>
+        </div>
+        <div class="t-review"><strong>Problem:</strong> ${escapeHtml(p.problem)}</div>
+        <div class="t-review"><strong>Solution:</strong> ${escapeHtml(p.solution)}</div>
+        ${p.results && p.results.length ? `<div class="t-review"><strong>Results:</strong><ul>${p.results.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul></div>` : ''}
+        <div class="t-actions">
+          <button class="btn-approve" data-action="edit" data-id="${p.id}">Edit</button>
+          <button class="btn-reject" data-action="delete" data-id="${p.id}">Delete</button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const proj = data.find(p => p.id === btn.getAttribute('data-id'));
+        if (proj) startEditProject(proj);
+      });
+    });
+    listEl.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Delete this project?')) return;
+        btn.disabled = true;
+        await supabaseClient.from('projects').delete().eq('id', btn.getAttribute('data-id'));
+        loadProjects();
+      });
+    });
+    listEl.querySelectorAll('button[data-action="toggle-publish"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const current = btn.getAttribute('data-current') === 'true';
+        btn.disabled = true;
+        await supabaseClient.from('projects').update({ published: !current }).eq('id', btn.getAttribute('data-id'));
+        loadProjects();
+      });
+    });
+  }
+
+  function startEditProject(proj) {
+    editingProjectId = proj.id;
+    document.getElementById('formTitle').textContent = 'Edit Project';
+    document.getElementById('projectId').value = proj.id;
+    document.getElementById('p_case_tag').value = proj.case_tag || '';
+    document.getElementById('p_title').value = proj.title || '';
+    document.getElementById('p_problem').value = proj.problem || '';
+    document.getElementById('p_solution').value = proj.solution || '';
+    document.getElementById('p_results').value = (proj.results || []).join('\n');
+    if (proj.image_url) {
+      existingImageUrl = proj.image_url;
+      p_imgPreview.src = proj.image_url;
+      p_imgPreview.style.display = 'block';
+    } else {
+      existingImageUrl = null;
+      p_imgPreview.style.display = 'none';
+    }
+    pendingImageFile = null;
+    document.getElementById('cancelEditBtn').style.display = 'inline-block';
+    document.getElementById('projectsPanel').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function resetProjectForm() {
+    editingProjectId = null;
+    pendingImageFile = null;
+    existingImageUrl = null;
+    document.getElementById('formTitle').textContent = 'Add New Project';
+    document.getElementById('projectId').value = '';
+    document.getElementById('p_case_tag').value = '';
+    document.getElementById('p_title').value = '';
+    document.getElementById('p_problem').value = '';
+    document.getElementById('p_solution').value = '';
+    document.getElementById('p_results').value = '';
+    p_image.value = '';
+    p_imgPreview.style.display = 'none';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+  }
+
+  document.getElementById('cancelEditBtn').addEventListener('click', resetProjectForm);
+
+  document.getElementById('saveProjectBtn').addEventListener('click', async () => {
+    const saveMsg = document.getElementById('saveMsg');
+    saveMsg.style.display = 'none';
+    const title = document.getElementById('p_title').value.trim();
+    const problem = document.getElementById('p_problem').value.trim();
+    const solution = document.getElementById('p_solution').value.trim();
+    if (!title || !problem || !solution) {
+      saveMsg.textContent = 'Title, Problem, and Solution are required.';
+      saveMsg.style.color = 'var(--danger)';
+      saveMsg.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('saveProjectBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+      let imageUrl = pendingImageFile ? null : existingImageUrl;
+
+      if (pendingImageFile) {
+        const ext = pendingImageFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: uploadError } = await supabaseClient.storage
+          .from('project-images')
+          .upload(fileName, pendingImageFile);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabaseClient.storage.from('project-images').getPublicUrl(fileName);
+        imageUrl = urlData.publicUrl;
+      }
+
+      const results = document.getElementById('p_results').value
+        .split('\n').map(s => s.trim()).filter(Boolean);
+
+      const payload = {
+        case_tag: document.getElementById('p_case_tag').value.trim(),
+        title,
+        problem,
+        solution,
+        results,
+        image_url: imageUrl
+      };
+
+      let error;
+      if (editingProjectId) {
+        ({ error } = await supabaseClient.from('projects').update(payload).eq('id', editingProjectId));
+      } else {
+        ({ error } = await supabaseClient.from('projects').insert(payload));
+      }
+      if (error) throw error;
+
+      saveMsg.textContent = 'Saved successfully.';
+      saveMsg.style.color = 'var(--teal)';
+      saveMsg.style.display = 'block';
+      resetProjectForm();
+      loadProjects();
+    } catch (err) {
+      saveMsg.textContent = 'Error: ' + err.message;
+      saveMsg.style.color = 'var(--danger)';
+      saveMsg.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save Project';
+    }
+  });
+
+  checkSession();
+</script>
+</body>
+</html>
